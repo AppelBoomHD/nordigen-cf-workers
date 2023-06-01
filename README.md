@@ -1,77 +1,89 @@
-# nordigen-api
+# nordigen-cf-workers
 
-Unofficial JavaScript API Library for Nordigen.
+> Unofficial Cloudflare Workers API Library for Nordigen.
 
 This library allows you to easily access the Nordigen Account Information API.
 
-Please note that the Categorisation & Insights API is not yet implemented into this library. If you have access to that API, feel free to contribute to this library.
+Please note that not every endpoint is implemented in this library. Feel free to contribute to this library to add any extra endpoints that you would like to use.
 
-API Documentation: https://vantezzen.github.io/nordigen/
-NPM: https://www.npmjs.com/package/nordigen-api
+API Documentation: https://appelboomhd.github.io/nordigen-cf-workers
+NPM: https://www.npmjs.com/package/nordigen-cf-workers
 
 ## Installation
 
 Simply install the Library via NPM:
 
 ```bash
-npm install nordigen-api
+npm install nordigen-cf-workers
 ```
 
-nordigen-api is build with TypeScript so you shouldn't need to install additional packages for type-support.
+nordigen-cf-workers is built with TypeScript so you shouldn't need to install additional packages for type-support.
 
 ## Usage
 
-This library uses Promise-based methods for calling the API. It is rept very slim, so you want to handle error handling etc. yourself.
+This library uses Promise-based methods for calling the API. It is kept very slim, so you want to handle error handling etc. yourself.
 
 Here is an example flow on how you can access accounts using the library. This example follows the same steps as defined in Nordigen's API quickstart guide at https://nordigen.com/en/account_information_documenation/integration/quickstart_guide/.
 
 ```JS
-import Nordigen from 'nordigen-api';
+import Nordigen from 'nordigen-cf-workers';
 
-const nordigen = new Nordigen('YOUR_ACCESS_TOKEN');
+const nordigen = new Nordigen('secretId', 'secretKey');
+await nordigen.generateToken()
 
 // Please note that you might also define an endpoint URL if you do not use the default Nordigen API, e.g.
-// const nordigen = new Nordigen('YOUR_ACCESS_TOKEN', 'https://ob.beta.nordigen.com/api');
+// const nordigen = new Nordigen('secretId', 'secretKey', 'https://ob.beta.nordigen.com/api');
 
-// First, get a list of ASPSPs (Banks) for the user
-const aspsps = await nordigen.getASPSPsForCountry('gb');
+// First, get a list of institutions (Banks) for the user
+const institutions = await nordigen.getInstitutions('NL');
 
-// Let the user pick their ASPSP now. We will use the first ASPSP in this example:
-const userAspsp = aspsps[0];
-
-// A user needs an end user ID later on. You can choose this ID freely but it should remain the same
-const enduser_id = "demo";
+// Let the user pick their institution now. We will use the first institution in this example:
+const institution = institutions[0];
 
 // Optionally, you can create an end user agreement to define a custom history length. If you want to use the default length of 90 days, skip this step
-const agreement = await nordigen.createEndUserAgreement(enduser_id, userAspsp.id, 30);
-
-// Now we need to create a "requisition" which allows us to authenticate a user at their bank
-const requisition = await nordigen.createRequisition(
-  enduser_id,
-
-  // The user needs to be redirected to their bank's website. After they are done they will be redirected back to your website.
-  // This is why you will need to define a redirect URL here
-  // PLEASE NOTE: Nordigen will automatically add "?ref={enduser_id}" to this callback URL so you won't need to add that yourself!
-  `https://example.com/nordigen-callback`,
-
-  // You can define another unique ID here. This is the "reference" to this requisition
-  "demo_id",
+const agreement = await nordigen.createEndUserAgreement({
+  institutionId: institution.id,
 
   // The following arguments are completely *optional*. If you don't need them, don't define them
 
+  // The length of the transaction history to be retrieved
+  maxHistoricalDays: 60,
+
+  // The length of time the end-user's access token is valid for
+  accessValidForDays: 30,
+
+  // The scope of the access token
+  accessScope: [
+    'balances',
+    'details',
+    'transactions'
+  ]
+ });
+
+// Now we need to create a "requisition" which allows us to authenticate a user at their bank
+const requisition = await nordigen.createRequisition({
+  // The user needs to be redirected to their bank's website. After they are done they will be redirected back to your website.
+  // This is why you will need to define a redirect URL here
+  // PLEASE NOTE: Nordigen will automatically add "?ref={enduser_id}" to this callback URL so you won't need to add that yourself!
+  redirect: `https://example.com/nordigen-callback`,
+
+  // The id of the institution for which you want to create a requisition
+  institutionId: institution.id
+
+  // The following arguments are completely *optional*. If you don't need them, don't define them
+
+  // You can define another unique ID here. This is the "reference" to this requisition
+  reference: "demo_id",
+
   // Array of User agreements that we want to use
-  [
-    agreement
-  ],
+  agreement,
 
   // A language code that should be used. Otherwise, the user language will be used automatically. Format should be ISO 3166
-  "EN/us"
-);
+  userLanguage: "EN/us",
 
-// We have now create a requisition but we will need to redirect the user to their bank's website now. For that, we need the requisition link for the user's bank
-const requisitionLink = await nordigen.getRequisitionLink(requisition, userAspsp.id);
-
-// You may now redirect the user to this link and wait while they authenticate at their bank.
+  // Option to enable account selection view for the end user
+  accountSelection: true
+});
 
 // As soon as the user comes back (e.g. being on the callback URL) we can get user information from our requsition.
 const requsitionInfo = await nordigen.getRequisitionInfo(requisition.id);
