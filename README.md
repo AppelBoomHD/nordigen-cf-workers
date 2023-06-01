@@ -2,6 +2,8 @@
 
 > Unofficial Cloudflare Workers API Library for Nordigen.
 
+This is a fork from https://github.com/vantezzen/nordigen.
+
 This library allows you to easily access the Nordigen Account Information API.
 
 Please note that not every endpoint is implemented in this library. Feel free to contribute to this library to add any extra endpoints that you would like to use.
@@ -85,6 +87,17 @@ const requisition = await nordigen.createRequisition({
   accountSelection: true
 });
 
+// Get link to authorize in the bank
+// Authorize with your bank via this link, to gain access to account data
+const link = requisition.link;
+
+// requisition id is needed to get accountId in the next step
+const requisitionId = requisition.id;
+```
+After successful authorization with a bank you can fetch your data (details, balances, transactions)
+
+## Fetching account metadata, balances, details and transactions
+```JS
 // As soon as the user comes back (e.g. being on the callback URL) we can get user information from our requsition.
 const requsitionInfo = await nordigen.getRequisitionInfo(requisition.id);
 
@@ -101,10 +114,11 @@ const balances = await nordigen.getAccountBalances(requsitionInfo.accounts[0]);
 
 // ...or a list of transactions in our history timeframe
 const transactions = await nordigen.getAccountTransactions(requsitionInfo.accounts[0]);
+```
+You can look at the API documentation or /src/lib/types for more information about the returned data
 
-// You can look at the API documentation or /src/lib/types for more information about the returned data
-
-// These are the methods this library provides.
+## Make requests to other endpoints
+```JS
 // If you want to call an API endpoint not defined in the library (e.g. deleting an agreement), you can call the "makeRequest" method directly instead:
 const response = await nordigen.makeRequest(
   // Relative path to the endpoint. You don't need the "https://ob.nordigen.com/api"
@@ -119,3 +133,6 @@ const response = await nordigen.makeRequest(
   }
 );
 ```
+
+## TODO
+- [ ] Implement option to re-use token in combination with refresh token (Durable objects or maybe environment variables)
