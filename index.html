@@ -64,72 +64,86 @@
 	<div class="row">
 		<div class="col-8 col-content">
 			<div class="tsd-panel tsd-typography">
-				<a href="#nordigen-api" id="nordigen-api" style="color: inherit; text-decoration: none;">
-					<h1>nordigen-api</h1>
+				<a href="#nordigen-cf-workers" id="nordigen-cf-workers" style="color: inherit; text-decoration: none;">
+					<h1>nordigen-cf-workers</h1>
 				</a>
-				<p>Unofficial JavaScript API Library for Nordigen.</p>
+				<blockquote>
+					<p>Unofficial Cloudflare Workers API Library for Nordigen.</p>
+				</blockquote>
 				<p>This library allows you to easily access the Nordigen Account Information API.</p>
-				<p>Please note that the Categorisation &amp; Insights API is not yet implemented into this library. If you have access to that API, feel free to contribute to this library.</p>
-				<p>API Documentation: <a href="https://vantezzen.github.io/nordigen/">https://vantezzen.github.io/nordigen/</a>
-				NPM: <a href="https://www.npmjs.com/package/nordigen-api">https://www.npmjs.com/package/nordigen-api</a></p>
+				<p>Please note that not every endpoint is implemented in this library. Feel free to contribute to this library to add any extra endpoints that you would like to use.</p>
+				<p>API Documentation: <a href="https://appelboomhd.github.io/nordigen-cf-workers">https://appelboomhd.github.io/nordigen-cf-workers</a>
+				NPM: <a href="https://www.npmjs.com/package/nordigen-cf-workers">https://www.npmjs.com/package/nordigen-cf-workers</a></p>
 				<a href="#installation" id="installation" style="color: inherit; text-decoration: none;">
 					<h2>Installation</h2>
 				</a>
 				<p>Simply install the Library via NPM:</p>
-				<pre><code class="language-bash">npm install nordigen-api
+				<pre><code class="language-bash">npm install nordigen-cf-workers
 </code></pre>
-				<p>nordigen-api is build with TypeScript so you shouldn&#39;t need to install additional packages for type-support.</p>
+				<p>nordigen-cf-workers is built with TypeScript so you shouldn&#39;t need to install additional packages for type-support.</p>
 				<a href="#usage" id="usage" style="color: inherit; text-decoration: none;">
 					<h2>Usage</h2>
 				</a>
-				<p>This library uses Promise-based methods for calling the API. It is rept very slim, so you want to handle error handling etc. yourself.</p>
+				<p>This library uses Promise-based methods for calling the API. It is kept very slim, so you want to handle error handling etc. yourself.</p>
 				<p>Here is an example flow on how you can access accounts using the library. This example follows the same steps as defined in Nordigen&#39;s API quickstart guide at <a href="https://nordigen.com/en/account_information_documenation/integration/quickstart_guide/">https://nordigen.com/en/account_information_documenation/integration/quickstart_guide/</a>.</p>
-				<pre><code class="language-JS"><span class="hljs-keyword">import</span> Nordigen <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;nordigen-api&#x27;</span>;
+				<pre><code class="language-JS"><span class="hljs-keyword">import</span> Nordigen <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;nordigen-cf-workers&#x27;</span>;
 
-<span class="hljs-keyword">const</span> nordigen = <span class="hljs-keyword">new</span> Nordigen(<span class="hljs-string">&#x27;YOUR_ACCESS_TOKEN&#x27;</span>);
+<span class="hljs-keyword">const</span> nordigen = <span class="hljs-keyword">new</span> Nordigen(<span class="hljs-string">&#x27;secretId&#x27;</span>, <span class="hljs-string">&#x27;secretKey&#x27;</span>);
+<span class="hljs-keyword">await</span> nordigen.generateToken()
 
 <span class="hljs-comment">// Please note that you might also define an endpoint URL if you do not use the default Nordigen API, e.g.</span>
-<span class="hljs-comment">// const nordigen = new Nordigen(&#x27;YOUR_ACCESS_TOKEN&#x27;, &#x27;https://ob.beta.nordigen.com/api&#x27;);</span>
+<span class="hljs-comment">// const nordigen = new Nordigen(&#x27;secretId&#x27;, &#x27;secretKey&#x27;, &#x27;https://ob.beta.nordigen.com/api&#x27;);</span>
 
-<span class="hljs-comment">// First, get a list of ASPSPs (Banks) for the user</span>
-<span class="hljs-keyword">const</span> aspsps = <span class="hljs-keyword">await</span> nordigen.getASPSPsForCountry(<span class="hljs-string">&#x27;gb&#x27;</span>);
+<span class="hljs-comment">// First, get a list of institutions (Banks) for the user</span>
+<span class="hljs-keyword">const</span> institutions = <span class="hljs-keyword">await</span> nordigen.getInstitutions(<span class="hljs-string">&#x27;NL&#x27;</span>);
 
-<span class="hljs-comment">// Let the user pick their ASPSP now. We will use the first ASPSP in this example:</span>
-<span class="hljs-keyword">const</span> userAspsp = aspsps[<span class="hljs-number">0</span>];
-
-<span class="hljs-comment">// A user needs an end user ID later on. You can choose this ID freely but it should remain the same</span>
-<span class="hljs-keyword">const</span> enduser_id = <span class="hljs-string">&quot;demo&quot;</span>;
+<span class="hljs-comment">// Let the user pick their institution now. We will use the first institution in this example:</span>
+<span class="hljs-keyword">const</span> institution = institutions[<span class="hljs-number">0</span>];
 
 <span class="hljs-comment">// Optionally, you can create an end user agreement to define a custom history length. If you want to use the default length of 90 days, skip this step</span>
-<span class="hljs-keyword">const</span> agreement = <span class="hljs-keyword">await</span> nordigen.createEndUserAgreement(enduser_id, userAspsp.id, <span class="hljs-number">30</span>);
-
-<span class="hljs-comment">// Now we need to create a &quot;requisition&quot; which allows us to authenticate a user at their bank</span>
-<span class="hljs-keyword">const</span> requisition = <span class="hljs-keyword">await</span> nordigen.createRequisition(
-  enduser_id,
-
-  <span class="hljs-comment">// The user needs to be redirected to their bank&#x27;s website. After they are done they will be redirected back to your website.</span>
-  <span class="hljs-comment">// This is why you will need to define a redirect URL here</span>
-  <span class="hljs-comment">// PLEASE <span class="hljs-doctag">NOTE:</span> Nordigen will automatically add &quot;?ref={enduser_id}&quot; to this callback URL so you won&#x27;t need to add that yourself!</span>
-  <span class="hljs-string">`https://example.com/nordigen-callback`</span>,
-
-  <span class="hljs-comment">// You can define another unique ID here. This is the &quot;reference&quot; to this requisition</span>
-  <span class="hljs-string">&quot;demo_id&quot;</span>,
+<span class="hljs-keyword">const</span> agreement = <span class="hljs-keyword">await</span> nordigen.createEndUserAgreement({
+  <span class="hljs-attr">institutionId</span>: institution.id,
 
   <span class="hljs-comment">// The following arguments are completely *optional*. If you don&#x27;t need them, don&#x27;t define them</span>
 
+  <span class="hljs-comment">// The length of the transaction history to be retrieved</span>
+  <span class="hljs-attr">maxHistoricalDays</span>: <span class="hljs-number">60</span>,
+
+  <span class="hljs-comment">// The length of time the end-user&#x27;s access token is valid for</span>
+  <span class="hljs-attr">accessValidForDays</span>: <span class="hljs-number">30</span>,
+
+  <span class="hljs-comment">// The scope of the access token</span>
+  <span class="hljs-attr">accessScope</span>: [
+    <span class="hljs-string">&#x27;balances&#x27;</span>,
+    <span class="hljs-string">&#x27;details&#x27;</span>,
+    <span class="hljs-string">&#x27;transactions&#x27;</span>
+  ]
+ });
+
+<span class="hljs-comment">// Now we need to create a &quot;requisition&quot; which allows us to authenticate a user at their bank</span>
+<span class="hljs-keyword">const</span> requisition = <span class="hljs-keyword">await</span> nordigen.createRequisition({
+  <span class="hljs-comment">// The user needs to be redirected to their bank&#x27;s website. After they are done they will be redirected back to your website.</span>
+  <span class="hljs-comment">// This is why you will need to define a redirect URL here</span>
+  <span class="hljs-comment">// PLEASE <span class="hljs-doctag">NOTE:</span> Nordigen will automatically add &quot;?ref={enduser_id}&quot; to this callback URL so you won&#x27;t need to add that yourself!</span>
+  <span class="hljs-attr">redirect</span>: <span class="hljs-string">`https://example.com/nordigen-callback`</span>,
+
+  <span class="hljs-comment">// The id of the institution for which you want to create a requisition</span>
+  <span class="hljs-attr">institutionId</span>: institution.id
+
+  <span class="hljs-comment">// The following arguments are completely *optional*. If you don&#x27;t need them, don&#x27;t define them</span>
+
+  <span class="hljs-comment">// You can define another unique ID here. This is the &quot;reference&quot; to this requisition</span>
+  <span class="hljs-attr">reference</span>: <span class="hljs-string">&quot;demo_id&quot;</span>,
+
   <span class="hljs-comment">// Array of User agreements that we want to use</span>
-  [
-    agreement
-  ],
+  agreement,
 
   <span class="hljs-comment">// A language code that should be used. Otherwise, the user language will be used automatically. Format should be ISO 3166</span>
-  <span class="hljs-string">&quot;EN/us&quot;</span>
-);
+  <span class="hljs-attr">userLanguage</span>: <span class="hljs-string">&quot;EN/us&quot;</span>,
 
-<span class="hljs-comment">// We have now create a requisition but we will need to redirect the user to their bank&#x27;s website now. For that, we need the requisition link for the user&#x27;s bank</span>
-<span class="hljs-keyword">const</span> requisitionLink = <span class="hljs-keyword">await</span> nordigen.getRequisitionLink(requisition, userAspsp.id);
-
-<span class="hljs-comment">// You may now redirect the user to this link and wait while they authenticate at their bank.</span>
+  <span class="hljs-comment">// Option to enable account selection view for the end user</span>
+  <span class="hljs-attr">accountSelection</span>: <span class="hljs-literal">true</span>
+});
 
 <span class="hljs-comment">// As soon as the user comes back (e.g. being on the callback URL) we can get user information from our requsition.</span>
 <span class="hljs-keyword">const</span> requsitionInfo = <span class="hljs-keyword">await</span> nordigen.getRequisitionInfo(requisition.id);
