@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.0.1](https://github.com/AppelBoomHD/nordigen-cf-workers/compare/v1.0.0...v1.0.1) (2023-06-01)
+
+
+### Bug Fixes
+
+* **endpoints:** update createEndUserAgreement endpoint ([ecde3f3](https://github.com/AppelBoomHD/nordigen-cf-workers/commit/ecde3f37b7bb5963b41d0f2515e13fda8e1c6247))
+
 ## 1.0.0 (2023-06-01)
 
 
