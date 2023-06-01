@@ -70,6 +70,7 @@
 				<blockquote>
 					<p>Unofficial Cloudflare Workers API Library for Nordigen.</p>
 				</blockquote>
+				<p>This is a fork from <a href="https://github.com/vantezzen/nordigen">https://github.com/vantezzen/nordigen</a>.</p>
 				<p>This library allows you to easily access the Nordigen Account Information API.</p>
 				<p>Please note that not every endpoint is implemented in this library. Feel free to contribute to this library to add any extra endpoints that you would like to use.</p>
 				<p>API Documentation: <a href="https://appelboomhd.github.io/nordigen-cf-workers">https://appelboomhd.github.io/nordigen-cf-workers</a>
@@ -145,7 +146,18 @@
   <span class="hljs-attr">accountSelection</span>: <span class="hljs-literal">true</span>
 });
 
-<span class="hljs-comment">// As soon as the user comes back (e.g. being on the callback URL) we can get user information from our requsition.</span>
+<span class="hljs-comment">// Get link to authorize in the bank</span>
+<span class="hljs-comment">// Authorize with your bank via this link, to gain access to account data</span>
+<span class="hljs-keyword">const</span> link = requisition.link;
+
+<span class="hljs-comment">// requisition id is needed to get accountId in the next step</span>
+<span class="hljs-keyword">const</span> requisitionId = requisition.id;
+</code></pre>
+				<p>After successful authorization with a bank you can fetch your data (details, balances, transactions)</p>
+				<a href="#fetching-account-metadata-balances-details-and-transactions" id="fetching-account-metadata-balances-details-and-transactions" style="color: inherit; text-decoration: none;">
+					<h2>Fetching account metadata, balances, details and transactions</h2>
+				</a>
+				<pre><code class="language-JS"><span class="hljs-comment">// As soon as the user comes back (e.g. being on the callback URL) we can get user information from our requsition.</span>
 <span class="hljs-keyword">const</span> requsitionInfo = <span class="hljs-keyword">await</span> nordigen.getRequisitionInfo(requisition.id);
 
 <span class="hljs-comment">// This will give you a list of account IDs the user has access to under requsitionInfo.accounts</span>
@@ -161,11 +173,12 @@
 
 <span class="hljs-comment">// ...or a list of transactions in our history timeframe</span>
 <span class="hljs-keyword">const</span> transactions = <span class="hljs-keyword">await</span> nordigen.getAccountTransactions(requsitionInfo.accounts[<span class="hljs-number">0</span>]);
-
-<span class="hljs-comment">// You can look at the API documentation or /src/lib/types for more information about the returned data</span>
-
-<span class="hljs-comment">// These are the methods this library provides.</span>
-<span class="hljs-comment">// If you want to call an API endpoint not defined in the library (e.g. deleting an agreement), you can call the &quot;makeRequest&quot; method directly instead:</span>
+</code></pre>
+				<p>You can look at the API documentation or /src/lib/types for more information about the returned data</p>
+				<a href="#make-requests-to-other-endpoints" id="make-requests-to-other-endpoints" style="color: inherit; text-decoration: none;">
+					<h2>Make requests to other endpoints</h2>
+				</a>
+				<pre><code class="language-JS"><span class="hljs-comment">// If you want to call an API endpoint not defined in the library (e.g. deleting an agreement), you can call the &quot;makeRequest&quot; method directly instead:</span>
 <span class="hljs-keyword">const</span> response = <span class="hljs-keyword">await</span> nordigen.makeRequest(
   <span class="hljs-comment">// Relative path to the endpoint. You don&#x27;t need the &quot;https://ob.nordigen.com/api&quot;</span>
   <span class="hljs-string">&quot;/agreements/enduser/MY_ID&quot;</span>,
@@ -179,6 +192,12 @@
   }
 );
 </code></pre>
+				<a href="#todo" id="todo" style="color: inherit; text-decoration: none;">
+					<h2>TODO</h2>
+				</a>
+				<ul>
+					<li><input disabled="" type="checkbox"> Implement option to re-use token in combination with refresh token (Durable objects or maybe environment variables)</li>
+				</ul>
 			</div>
 		</div>
 		<div class="col-4 col-menu menu-sticky-wrap menu-highlight">
