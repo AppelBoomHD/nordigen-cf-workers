@@ -1,11 +1,11 @@
 {
-  "name": "nordigen-api",
-  "version": "1.0.4",
-  "description": "Unofficial JavaScript API Library for Nordigen",
+  "name": "nordigen-cf-workers",
+  "version": "1.0.0",
+  "description": "Unofficial Cloudflare Workers API Library for Nordigen",
   "main": "build/main/index.js",
   "typings": "build/main/index.d.ts",
   "module": "build/module/index.js",
-  "repository": "https://github.com/vantezzen/nordigen",
+  "repository": "https://github.com/AppelBoomHD/nordigen-cf-workers",
   "license": "MIT",
   "keywords": [],
   "scripts": {
@@ -35,13 +35,10 @@
   "engines": {
     "node": ">=10"
   },
-  "dependencies": {
-    "node-fetch": "^2.6.1"
-  },
   "devDependencies": {
     "@ava/typescript": "^1.1.1",
+    "@cloudflare/workers-types": "^3.19.0",
     "@istanbuljs/nyc-config-typescript": "^1.0.1",
-    "@types/node-fetch": "^2.5.10",
     "@typescript-eslint/eslint-plugin": "^4.0.1",
     "@typescript-eslint/parser": "^4.0.1",
     "ava": "^3.12.1",
@@ -89,9 +86,6 @@
     "commitizen": {
       "path": "cz-conventional-changelog"
     }
-  },
-  "prettier": {
-    "singleQuote": true
   },
   "nyc": {
     "extends": "@istanbuljs/nyc-config-typescript",
