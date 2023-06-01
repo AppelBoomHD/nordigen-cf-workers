@@ -11,7 +11,7 @@ import {
 /**
  * Unofficial Nordigen API for JavaScript
  *
- * @author vantezzen (https://github.com/vantezzen)
+ * @author Julian Riemersma (https://github.com/AppelBoomHD)
  * @license MIT License
  */
 export default class Nordigen {
@@ -40,8 +40,8 @@ export default class Nordigen {
    *
    * ### Example (es module)
    * ```js
-   * import Nordigen from 'nordigen'
-   * const nordigen = new Nordigen();
+   * import Nordigen from 'nordigen-cf-workers'
+   * const nordigen = new Nordigen(secretId, secretKey);
    * ```
    *
    * @param secretId
@@ -95,10 +95,10 @@ export default class Nordigen {
   }
 
   /**
-   * Get a list of ASPSPs (Banks) for a given country
+   * Get a list of Institutions (Banks) for a given country
    *
-   * @param countryCode Country code to use, e.g. "gb" for Great Britain
-   * @returns Array of ASPSPs
+   * @param countryCode Country code to use, e.g. "GB" for Great Britain
+   * @returns Array of Institutions
    */
   async getInstitutions(countryCode: string) {
     return this.makeRequest(`/institutions/?country=${countryCode}`) as Promise<
@@ -108,40 +108,41 @@ export default class Nordigen {
 
   /**
    * Create a new end user agreement for a user.
-   * Use this step only if you want to specify the length of transaction history you want to retrieve.
-   * If you skip this step, by default 90 days of transaction history will be retrieved
+   * Use this step only if you want to specify the length of transaction history you want to retrieve,
+   * the length of time the end-user's access token is valid for and the scope of the access token.
+   * If you skip this step, by default 90 days of transaction history will be retrieved,
+   * the end-user's access token will be valid for 90 days and the user will get access to all scopes.
    *
-   * @param endUserId A unique end-user ID of someone who's using your services, it has to be unique within your solution. Usually, it's UUID;
-   * @param aspspId ASPSP ID (Bank ID) to use
+   * @param institutionId Id of the institution for which you want to create a requisition
    * @param maxHistoricalDays The length of the transaction history to be retrieved
+   * @param accessValidForDays The length of time the end-user's access token is valid for
+   * @param accessScope The scope of the access token
    * @returns End user agreement
    */
-  async createEndUserAgreement(
-    endUserId: string,
-    aspspId: string,
-    maxHistoricalDays = 90
-  ) {
-    const response = (await this.makeRequest("/agreements/enduser/", "POST", {
-      enduser_id: endUserId,
-      aspsp_id: aspspId,
+  async createEndUserAgreement({
+    institutionId,
+    maxHistoricalDays,
+    accessValidForDays,
+    accessScope,
+  }: {
+    institutionId: string;
+    maxHistoricalDays?: number;
+    accessValidForDays?: number;
+    accessScope?: string[];
+  }) {
+    return (await this.makeRequest("/agreements/enduser/", "POST", {
+      institution_id: institutionId,
       max_historical_days: maxHistoricalDays,
-    })) as Omit<EndUserAgreement, "created" | "accepted"> & {
-      created: string;
-      accepted: string | null;
-    };
-
-    return {
-      ...response,
-      created: new Date(response.created),
-      accepted: response.accepted ? new Date(response.accepted) : null,
-    } as EndUserAgreement;
+      access_valid_for_days: accessValidForDays,
+      access_scope: accessScope,
+    })) as Promise<EndUserAgreement>;
   }
 
   /**
    * Create a requisition for a user
    *
    * @param redirect URI where the end user will be redirected after finishing authentication with Institution
-   * @param institutionId
+   * @param institutionId Id of the institution for which you want to create a requisition
    * @param reference Additional layer of unique ID defined by you
    * @param agreements As an array of end user agreement IDs or an empty array if you don't have one
    * @param userLanguage To enforce a language for all end user steps hosted by Nordigen passed as a two-letter country code (ISO 3166). If user_language is not defined a language set in browser will be used to determine language

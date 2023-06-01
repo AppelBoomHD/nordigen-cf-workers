@@ -37,12 +37,12 @@ export type BankAccount = {
  */
 export type EndUserAgreement = {
   id: string;
-  created: Date;
-  accepted: Date | null;
+  created: string;
+  institution_id: string;
   max_historical_days: number;
   access_valid_for_days: number;
-  enduser_id: string;
-  aspsp_id: string;
+  access_scope: string[];
+  accepted: string | null;
 };
 
 /**
